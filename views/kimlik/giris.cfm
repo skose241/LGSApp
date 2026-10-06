@@ -23,7 +23,7 @@
             AND aktifMi=1
         </cfquery>
 
-        <cfset sifrelemeNesnesi=createObject("component","views.includes.sifreleme")>
+        <cfset sifrelemeNesnesi=createObject("component","lgs.views.includes.sifreleme")>
         <cfif qKullanici.recordCount AND sifrelemeNesnesi.sifreDogrula(FORM.sifre,qKullanici.sifreHash)>
             <cfset sessionRotate()>
             <cfset SESSION.kullaniciID=val(qKullanici.kullaniciID)>
@@ -66,13 +66,13 @@
     </cfif>
 </cfif>
 
-<cfinclude template="/views/includes/baslik.cfm">
+<cfinclude template="/lgs/views/includes/baslik.cfm">
 
 <cfoutput>
     <div class="dar">
         <section class="kart">
             <div class="kart__govde">
-                <h1 class="baslik">Giriş Yap</h1>
+                <h1 baslik>Giriş Yap</h1>
 
                 <cfif len(hataMesaji)>
                     <div class="bildirim bildirim--hata" role="alert">#hataMesaji#</div>
@@ -83,15 +83,15 @@
                 </cfif>
 
                 <form method="post" action="#cgi.script_name#<cfif len(trim(URL.donus))>?donus=#urlEncodedFormat(URL.donus)#</cfif>">
-                    <cfinclude template="/views/includes/csrfAlan.cfm">
+                    <cfinclude template="/lgs/views/includes/csrfAlan.cfm">
 
                     <div class="alan">
-                        <label class="etiket" for="kullaniciAdi">Kullanıcı Adı:</label>
+                        <label etiket for="kullaniciAdi">Kullanıcı Adı:</label>
                         <input class="girdi" type="text" id="kullaniciAdi" name="kullaniciAdi" value="#encodeForHTMLAttribute(kullaniciAdiDeger)#" maxlength="50" autocomplete="username" required>
                     </div>
 
                     <div class="alan">
-                        <label class="etiket" for="sifre">Şifre</label>
+                        <label etiket for="sifre">Şifre</label>
                         <input class="girdi" type="password" id="sifre" name="sifre" maxlength="100" autocomplete="current-password" required>
                     </div>
 
@@ -101,13 +101,13 @@
                         </label>
                     </div>
 
-                    <button class="dugme dugme--birincil dugme--tam" type="submit" name="gonder" value="1">Giriş Yap</button>
+                    <button class="dugme dugme--ana dugme--tam" type="submit" name="gonder" value="1">Giriş Yap</button>
                 </form>
 
-                <p class="kucuk-metin ust-bosluk">Hesabınızla ilgili sorun yaşıyorsanız okul yönetimine başvurunuz</p>
+                <p class="sessiz ust-bosluk">Hesabınızla ilgili sorun yaşıyorsanız okul yönetimine başvurunuz</p>
             </div>
         </section>
     </div>
 </cfoutput>
 
-<cfinclude template="/views/includes/altBilgi.cfm">
+<cfinclude template="/lgs/views/includes/altBilgi.cfm">

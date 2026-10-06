@@ -1,6 +1,7 @@
 ﻿<cfcomponent output="false">
     <cfset this.name="LGSApp">
-    <cfset this.datasource="DSN">
+    <cfset this.datasource="LGSDSN">
+    <cfset this.mappings["/lgs"]=getDirectoryFromPath(getCurrentTemplatePath())>
     <cfset this.sessionManagement=true>
     <cfset this.sessionTimeOut=createTimespan(0,4,0,0)>
     <cfset this.clientManagement=false>
@@ -67,7 +68,7 @@
         <cfset application.uretimToken=envDegeri("LGS_URETIM_TOKEN")>
         <cfset application.geminiURL="https://generativelanguage.googleapis.com/v1beta/interactions">
         <cfset application.aiLimit=5>
-        <cfset application.aiKullaniciID=1>
+        <cfset application.aiKullaniciID=2>
         <cfset application.uretimBekleme=35000>
 
         <cfset application.rol={mudur=1,ogretmen=2,ogrenci=3,ai=4}>
