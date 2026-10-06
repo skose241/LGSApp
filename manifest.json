@@ -1,0 +1,9 @@
+﻿{
+    "name": "LGS Soru&Çözüm Platformu",
+    "short_name": "LGS Platform",
+    "start_url": "/LGSApp/anaSayfa.cfm",
+    "display": "standalone",
+    "background_color": "#E9EEEE",
+    "theme_color": "#E9EEEE",
+    "icons": []
+}

@@ -1,5 +1,5 @@
 ﻿<cfcomponent output="false">
-    <cfset this.name="LGSApp">
+    <cfset this.name="LGSApp.V2">
     <cfset this.datasource="LGSDSN">
     <cfset this.mappings["/lgs"]=getDirectoryFromPath(getCurrentTemplatePath())>
     <cfset this.sessionManagement=true>
@@ -76,10 +76,16 @@
         <cfset application.cozumTipi={ogretmen=2,ogrenci=3,ai=4}>
         <cfset application.odevDurum={taslak="taslak",yayinda="yayinda",kapandi="kapandi"}>
 
-        <cfset application.soruGorselYol="/assets/images/sorular/">
-        <cfset application.cozumGorselYol="/assets/images/cevaplar/">
-        <cfset application.odevGorselYol="/assets/images/odev/">
-        <cfset application.avatarYol="/assets/images/avatar/">
+        <cfset application.fizikselKok=getDirectoryFromPath(getCurrentTemplatePath())>
+        <cfset application.soruGorselDizin=application.fizikselKok & "assets\images\sorular\">
+        <cfset application.cozumGorselDizin=application.fizikselKok & "assets\images\cevaplar\">
+        <cfset application.odevGorselDizin=application.fizikselKok & "assets\images\odev\">
+        <cfset application.avatarDizin=application.fizikselKok & "assets\images\avatar\">
+
+        <cfset application.soruGorselYol="#application.kokYol#/assets/images/sorular/">
+        <cfset application.cozumGorselYol="#application.kokYol#/assets/images/cevaplar/">
+        <cfset application.odevGorselYol="#application.kokYol#/assets/images/odev/">
+        <cfset application.avatarYol="#application.kokYol#/assets/images/avatar/">
         <cfset referansYukle()>
 
         <cfreturn true>
