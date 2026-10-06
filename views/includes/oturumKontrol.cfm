@@ -1,4 +1,4 @@
-<cfif NOT structKeyExists(SESSION,"kullaniciID") OR NOT val(SESSION.kullaniciID)>
+﻿<cfif NOT structKeyExists(SESSION,"kullaniciID") OR NOT val(SESSION.kullaniciID)>
     <cfset donusAdresi=cgi.script_name>
     <cfif len(trim(cgi.query_string))>
         <cfset donusAdresi=donusAdresi & "?" & cgi.query_string>

@@ -1,4 +1,4 @@
-<cfparam name="gerekliRoller" default="">
+﻿<cfparam name="gerekliRoller" default="">
 
 <cfinclude template="/views/includes/oturumKontrol.cfm">
 

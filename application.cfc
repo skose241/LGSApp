@@ -1,4 +1,4 @@
-<cfcomponent output="false">
+﻿<cfcomponent output="false">
     <cfset this.name="LGSApp">
     <cfset this.datasource="DSN">
     <cfset this.sessionManagement=true>
