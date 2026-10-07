@@ -68,7 +68,7 @@
 <cfoutput>
     <div class="yigin">
         <section class="pano">
-            <h1 class="pano__baslik">Merhaba #encodeForHTML(SESSION.kullaniciAd)#</h1>
+            <h1 class="pano__baslik">Sayın #encodeForHTML(SESSION.kullaniciAd)# Hocam:</h1>
             <p class="pano__alt">Öğrencilerin takıldığı soruları buradan takip edebilirsiniz</p>
 
             <div class="pano__eylem">
