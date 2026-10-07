@@ -39,11 +39,15 @@
                 <cfthrow message="Geçersiz dosya türü">
             </cfif>
 
+            <cfset yeniAd="soru_" & dateFormat(now(),"yyyymmdd") & "_" & left(hash(createUUID(),"MD5"),10) & "." & lcase(yukleme.serverFileExt)>
+            <cffile action="rename" source="#yuklemeKlasoru##dosyaAdi#" destination="#yuklemeKlasoru##yeniAd#">
+            <cfset dosyaAdi=yeniAd>
+
             <cfimage action="read" source="#yuklemeKlasoru##dosyaAdi#" name="gorsel">
 
-            <cfif imageGetWidth(gorsel) GT 1000>
-                <cfset imageResize(gorsel,1000,"")>
-                <cfimage action="write" source="#gorsel#" destination="#yuklemeKlasoru##dosyaAdi#" overwrite="true" quality=".85">
+            <cfif imageGetWidth(gorsel) GT 800>
+                <cfset imageResize(gorsel,800,"")>
+                <cfimage action="write" source="#gorsel#" destination="#yuklemeKlasoru##dosyaAdi#" overwrite="true" quality="0.6">
             </cfif>
 
             <cfquery datasource="#application.DSN#" result="sonuc">
@@ -73,7 +77,7 @@
                 <cfif len(dosyaAdi) AND fileExists("#yuklemeKlasoru##dosyaAdi#")>
                     <cffile action="delete" file="#yuklemeKlasoru##dosyaAdi#">
                 </cfif>
-                <cfset hataMesaji="Görsel yüklenemedi.Lütfen jpg,png veya webp biçiminde bir dosya seçiniz">
+                    <cfset hataMesaji="HATA:" & cfcatch.message & " | " & cfcatch.detail>
             </cfcatch>
         </cftry>
     </cfif>

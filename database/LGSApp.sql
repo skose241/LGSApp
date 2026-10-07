@@ -107,6 +107,23 @@ CREATE TABLE Sorular(
 
 GO
 
+CREATE TABLE AILog(
+    aiLogID         INT IDENTITY(1,1) NOT NULL,
+    kullaniciID     INT               NULL,
+    soruID          INT               NULL,
+    islemTipi       NVARCHAR(50)      NOT NULL,
+    girdi           NVARCHAR(MAX)     NULL,
+    cikti           NVARCHAR(MAX)     NULL,
+    model           NVARCHAR(50)      NULL,
+    eklenmeTarihi   DATETIME          NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT PK_AILog PRIMARY KEY (aiLogID),
+    CONSTRAINT FK_AILog_Kullanicilar FOREIGN KEY (kullaniciID) REFERENCES Kullanicilar(kullaniciID),
+    CONSTRAINT FK_AILog_Sorular FOREIGN KEY (soruID) REFERENCES Sorular(soruID)
+)
+
+GO
+
 CREATE INDEX IX_Sorular_ders ON Sorular (dersID, aktifMi)
 
 GO

@@ -16,7 +16,7 @@
 <cfquery name="qSoru" datasource="#application.DSN#">
     SELECT s.soruID,s.kullaniciID,s.dersID,s.konuID,s.soruMetni,s.soruGorsel,
            s.secenekA,s.secenekB,s.secenekC,s.secenekD,s.dogruCevap,s.aciklama,
-           s.kaynak,s.olusturmaTarihi,
+           s.cevapSupheli,s.kaynak,s.olusturmaTarihi,
            k.kullaniciAdi,d.dersAdi,ko.konuAdi
     FROM Sorular s
     INNER JOIN Kullanicilar k ON k.kullaniciID=s.kullaniciID
@@ -69,10 +69,14 @@
                     <cfthrow message="Geçersiz dosya türü">
                 </cfif>
 
+                <cfset yeniAd="cozum_" & dateFormat(now(),"yyyymmdd") & "_" & left(hash(createUUID(),"MD5"),10) & "." & lcase(cozumYukleme.serverFileExt)>
+                <cffile action="rename" source="#application.cozumGorselDizin##cozumDosyaAdi#" destination="#application.cozumGorselDizin##yeniAd#">
+                <cfset cozumDosyaAdi=yeniAd>
+
                 <cfimage action="read" source="#application.cozumGorselDizin##cozumDosyaAdi#" name="cozumGorseli">
 
-                <cfif imageGetWidth(cozumGorseli) GT 1000>
-                    <cfset imageResize(cozumGorseli,1000,"")>
+                <cfif imageGetWidth(cozumGorseli) GT 800>
+                    <cfset imageResize(cozumGorseli,800,"")>
                     <cfimage action="write" source="#cozumGorseli#" destination="#application.cozumGorselDizin##cozumDosyaAdi#" overwrite="true" quality=".85">
                 </cfif>
             </cfif>
@@ -167,7 +171,7 @@
             <cfqueryparam value="#soruID#" cfsqltype="cf_sql_integer">,
             <cfqueryparam value="#hedefCozumID#" cfsqltype="cf_sql_integer" null="#NOT hedefCozumID#">,
             <cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">,
-            <cfqueryparam value="#left(yorumMetniDeger,1000)#" cfsqltype="cf_sql_nvarchar">
+            <cfqueryparam value="#left(yorumMetniDeger,800)#" cfsqltype="cf_sql_nvarchar">
             )
         </cfquery>
 
@@ -222,6 +226,18 @@
             </div>
         </cfif>
 
+        <cfif structKeyExists(URL,"hata")>
+            <div class="bildirim bildirim--hata" role="alert">
+                <cfswitch expression="#URL.hata#">
+                    <cfcase value="bekle">Önceki isteğiniz işleniyor.Birkaç saniye sonra tekrar deneyiniz</cfcase>
+                    <cfcase value="limit">Günlük yapay zeka çözüm hakkınız doldu</cfcase>
+                    <cfcase value="okunamadi">Soru görseli net okunamadığı için çözüm üretilemedi</cfcase>
+                    <cfcase value="yetkisiz">Bu işlem için önce soruyu cevaplamalısınız</cfcase>
+                    <cfdefaultcase>Yapay zeka şu anda yanıt veremedi.Birkaç dakika sonra tekrar deneyiniz</cfdefaultcase>
+                </cfswitch>
+            </div>
+        </cfif>
+
         <cfif len(hataMesaji)>
             <div class="bildirim bildirim--hata" role="alert">#encodeForHTML(hataMesaji)#</div>
         </cfif>
@@ -243,6 +259,10 @@
                         <span class="rozet rozet--yz">Yapay Zeka Sorusu</span>
                     <cfelseif val(qSoru.kaynak) EQ application.kaynak.ogretmen>
                         <span class="rozet rozet--sistem">Öğretmen Sorusu</span>
+                    </cfif>
+
+                    <cfif qSoru.cevapSupheli AND ogretmenMi>
+                        <span class="rozet rozet--pasif">Cevap Şüpheli</span>
                     </cfif>
 
                     <span class="sessiz">#encodeForHTML(qSoru.kullaniciAdi)# · #dateFormat(qSoru.olusturmaTarihi,"dd.mm.yyyy")#</span>
