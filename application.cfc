@@ -74,7 +74,7 @@
         <cfset application.rol={mudur=1,ogretmen=2,ogrenci=3,ai=4}>
         <cfset application.kaynak={ogretmen=2,ogrenci=3,ai=4}>
         <cfset application.cozumTipi={ogretmen=2,ogrenci=3,ai=4}>
-        <cfset application.odevDurum={taslak="taslak",yayinda="yayinda",kapandi="kapandi"}>
+        <cfset application.odevDurum={taslak="taslak",planlandi="planlandi",yayinda="yayinda",kapandi="kapandi"}>
 
         <cfset application.fizikselKok=getDirectoryFromPath(getCurrentTemplatePath())>
         <cfset application.soruGorselDizin=application.fizikselKok & "assets\images\sorular\">

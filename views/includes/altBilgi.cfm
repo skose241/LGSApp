@@ -21,6 +21,7 @@
             <script src="#application.kokYol#/assets/vendor/katex/katex.min.js"></script>
             <script src="#application.kokYol#/assets/vendor/katex/auto-render.min.js"></script>
             <script src="#application.kokYol#/assets/js/custom.js?v=#application.varlikSurum#"></script>
+            <script src="#application.kokYol#/assets/js/topluYukle.js?v=#application.varlikSurum#"></script>
         </body>
     </html>
 </cfoutput>
