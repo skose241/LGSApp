@@ -124,7 +124,7 @@
                         <cfloop query="qOgrenciler">
                             <tr<cfif NOT val(qOgrenciler.cevaplanan)> class="pasif"</cfif>>
                                 <td>
-                                    #encodeForHTML(qOgrenciler.kullaniciAdi)#
+                                    <a class="bag" href="#application.kokYol#/views/profil/profilim.cfm?id=#qOgrenciler.kullaniciID#">#encodeForHTML(qOgrenciler.kullaniciAdi)#</a>
                                     <cfif len(qOgrenciler.adSoyad)><br><span class="sessiz">#encodeForHTML(qOgrenciler.adSoyad)#</span></cfif>
                                 </td>
 

@@ -63,6 +63,16 @@
     ORDER BY s.olusturmaTarihi DESC
 </cfquery>
 
+<cfquery name="qOgrenciListesi" datasource="#application.DSN#">
+    SELECT k.kullaniciID,k.kullaniciAdi,k.adSoyad,k.puan,k.sonGirisTarihi,
+        (SELECT COUNT(*) FROM Cevaplar c WHERE c.kullaniciID=k.kullaniciID) AS cozdugu,
+        (SELECT COUNT(*) FROM Sorular s WHERE s.kullaniciID=k.kullaniciID AND s.aktifMi=1) AS sordugu
+    FROM Kullanicilar k
+    WHERE k.rol=<cfqueryparam value="#application.rol.ogrenci#" cfsqltype="cf_sql_tinyint">
+    AND k.aktifMi=1
+    ORDER BY k.kullaniciAdi
+</cfquery>
+
 <cfinclude template="/lgs/views/includes/baslik.cfm">
 
 <cfoutput>
@@ -154,6 +164,43 @@
                 </div>
             </cfif>
         </section>
+
+            <section class="kart">
+                <div class="kart__baslik">Öğrenciler:<span class="rozet">#qOgrenciListesi.recordCount#</span></div>
+
+                <div class="tablo-sarmal">
+                    <table class="tablo">
+                        <thead>
+                            <tr>
+                                <th>Öğrenci Adı:</th>
+                                <th>Çözdüğü Sorular:</th>
+                                <th>Sorduğu Sorular:</th>
+                                <th>Puan:</th>
+                                <th>Son Giriş Tarihi:</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <cfloop query="qOgrenciListesi">
+                                <tr>
+                                    <td>
+                                        <a class="bag" href="#application.kokYol#/views/profil/profilim.cfm?id=#qOgrenciListesi.kullaniciID#">#encodeForHTML(qOgrenciListesi.kullaniciAdi)#</a>
+                                        <cfif len(qOgrenciListesi.adSoyad)><br><span class="sessiz">#encodeForHTML(qOgrenciListesi.adSoyad)#</span></cfif>
+                                    </td>
+
+                                    <td class="veri">#val(qOgrenciListesi.cozdugu)#</td>
+                                    <td class="veri">#val(qOgrenciListesi.sordugu)#</td>
+                                    <td class="veri">#val(qOgrenciListesi.puan)#</td>
+
+                                    <td class="veri">
+                                        <cfif len(qOgrenciListesi.sonGirisTarihi)>#dateFormat(qOgrenciListesi.sonGirisTarihi,"dd.mm")#<cfelse>-</cfif>
+                                    </td>
+                                </tr>
+                            </cfloop>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
         <section class="kart">
             <div class="kart__baslik">Öğrencilerin Son Soruları:</div>
