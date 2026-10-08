@@ -289,6 +289,7 @@
         <cfset var gorselMi=false>
         <cfset var okunamadi=false>
         <cfset var aiSik="">
+        <cfset var eslesme="">
         <cfset var qBrans="">
 
         <cfquery name="qVar" datasource="#application.DSN#">
@@ -305,7 +306,7 @@
         </cfif>
 
         <cfquery name="qSoru" datasource="#application.DSN#">
-            SELECT s.soruID,s.dersID,s.soruMetni,s.soruGorsel,s.secenekA,s.secenekB,s.secenekC,s.secenekD,
+            SELECT s.soruID,s.dersID,s.kaynak,s.soruMetni,s.soruGorsel,s.secenekA,s.secenekB,s.secenekC,s.secenekD,
                     s.dogruCevap,d.dersAdi,ko.konuAdi
             FROM Sorular s
             INNER JOIN Dersler d ON d.dersID=s.dersID
@@ -346,7 +347,11 @@
                     <cfreturn sonuc>
                 </cfif>
 
-                <cfset resimTamYol=application.soruGorselDizin & trim(qSoru.soruGorsel)>
+                <cfif val(qSoru.kaynak) EQ application.kaynak.ogretmen>
+                    <cfset resimTamYol=application.odevGorselDizin & trim(qSoru.soruGorsel)>
+                <cfelse>
+                    <cfset resimTamYol=application.soruGorselDizin & trim(qSoru.soruGorsel)>
+                </cfif>
 
                 <cfif NOT fileExists(resimTamYol)>
                     <cfset sonuc.hata="Dosya diskte yok:" & resimTamYol>
@@ -437,9 +442,10 @@
             </cfquery>
 
             <cfset aiSik="">
+            <cfset eslesme=reFindNoCase("do[gğ]ru\s*cevap\s*:?\s*\(?([ABCD])\)?",aiCevap.metin,1,true)>
 
-            <cfif reFindNoCase("do[gğ]ru\s*cevap\s*:?\s*\(?([ABCD])\)?",aiCevap.metin)>
-                <cfset aiSik=ucase(reReplaceNoCase(aiCevap.metin,".*?do[gğ]ru\s*cevap\s*:?\s*\(?([ABCD])\)?.*","\1"))>
+            <cfif eslesme.pos[1] AND arrayLen(eslesme.pos) GTE 2 AND eslesme.pos[2]>
+                <cfset aiSik=ucase(mid(aiCevap.metin,eslesme.pos[2],eslesme.len[2]))>
             </cfif>
 
             <cfif len(aiSik) AND compare(aiSik,trim(qSoru.dogruCevap)) NEQ 0>

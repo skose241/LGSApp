@@ -46,7 +46,7 @@ function matematikRender(){
         return;
     }
 
-    document.querySelectorAll(".soru__metin, .ai-kutu, .cozum, .yorum").forEach(function(alan){
+    document.querySelectorAll(".soru__metin, .sik__yazi, .ai-kutu, .cozum, .yorum").forEach(function(alan){
         renderMathInElement(alan,{
             delimiters: [
                 {left:"$$",right:"$$",display:true},

@@ -9,14 +9,19 @@
 </cfif>
 
 <cfquery name="qGununSorulari" datasource="#application.DSN#">
-    SELECT s.soruID,s.soruMetni,s.dersID,d.dersAdi,k.konuAdi,
+    SELECT s.soruID,s.soruMetni,s.dersID,s.yayinTarihi,d.dersAdi,k.konuAdi,
            c.cevapID,c.dogruMu
     FROM Sorular s
     INNER JOIN Dersler d ON d.dersID=s.dersID
     LEFT JOIN Konular k ON k.konuID=s.konuID
     LEFT JOIN Cevaplar c ON c.soruID=s.soruID
         AND c.kullaniciID=<cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">
-    WHERE s.yayinTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
+    WHERE s.yayinTarihi>=DATEADD(DAY,-6,CAST(GETDATE() AS DATE))
+    AND (s.yayinTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date"> OR c.cevapID IS NULL)
+    AND s.kaynak=<cfqueryparam value="#application.kaynak.ai#" cfsqltype="cf_sql_tinyint">
+    AND s.yayinlandiMi=1
+    AND s.aktifMi=1
+    ORDER BY s.yayinTarihi DESC,d.siraNo
     AND s.kaynak=<cfqueryparam value="#application.kaynak.ai#" cfsqltype="cf_sql_tinyint">
     AND s.yayinlandiMi=1
     AND s.aktifMi=1

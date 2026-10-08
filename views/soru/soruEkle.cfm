@@ -58,7 +58,7 @@
                 <cfqueryparam value="#dosyaAdi#" cfsqltype="cf_sql_nvarchar">,
                 <cfqueryparam value="#dogruCevapDeger#" cfsqltype="cf_sql_nchar">,
                 <cfqueryparam value="#aciklamaDeger#" cfsqltype="cf_sql_longvarchar">,
-                <cfqueryparam value="#iif(val(SESSION.rol) EQ application.rol.ogrenci,DE(application.kaynak.ogrenci),DE(application.kaynak.ogretmen))#" cfsqltype="cf_sql_tinyint">,
+                application.kaynak.ogrenci,
                 1,
                 1
                 )

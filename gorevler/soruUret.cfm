@@ -32,138 +32,140 @@
 
 <cfoutput>LGS Soru Üretimi - #dateFormat(bugun,"dd.mm.yyyy")# #chr(10)#</cfoutput>
 
-<cfloop query="qProgram">
-    <cfset dersID=val(qProgram.dersID)>
-    <cfset uretilecek=ceiling(val(qProgram.soruSayisi)*carpan)>
-    <cfset konuID=0>
-    <cfset konuKaynagi="">
+<cflock name="LGSApp_soruUret" type="exclusive" timeout="1" throwontimeout="false">
+    <cfloop query="qProgram">
+        <cfset dersID=val(qProgram.dersID)>
+        <cfset uretilecek=ceiling(val(qProgram.soruSayisi)*carpan)>
+        <cfset konuID=0>
+        <cfset konuKaynagi="">
 
-    <cfquery name="qMevcutUretim" datasource="#application.DSN#">
-        SELECT COUNT(*) AS adet
-        FROM UretimLog
-        WHERE calismaTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
-        AND dersID=<cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">
-        AND durum=<cfqueryparam value="basarili" cfsqltype="cf_sql_nvarchar">
-    </cfquery>
-
-    <cfset eksikSayisi=uretilecek-val(qMevcutUretim.adet)>
-
-    <cfif eksikSayisi LTE 0>
-        <cfoutput>#qProgram.dersAdi#: zaten tamam,atlandı#chr(10)#</cfoutput>
-        <cfcontinue>
-    </cfif>
-
-    <cfquery name="qPlan" datasource="#application.DSN#">
-        SELECT konuID
-        FROM GunlukKonuPlani
-        WHERE planTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
-        AND dersID=<cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">
-    </cfquery>
-
-    <cfif qPlan.recordCount>
-        <cfset konuID=val(qPlan.konuID)>
-        <cfset konuKaynagi="öğretmen seçimi">
-    <cfelse>
-        <cfquery name="qSonKullanilan" datasource="#application.DSN#">
-            SELECT TOP 1 konuID
-            FROM GunlukKonuPlani
-            WHERE dersID=<cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">
-            AND kullanildiMi=1
-            ORDER BY planTarihi DESC
+        <cfquery name="qMevcutUretim" datasource="#application.DSN#">
+            SELECT COUNT(*) AS adet
+            FROM UretimLog
+            WHERE calismaTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
+            AND dersID=<cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">
+            AND durum=<cfqueryparam value="basarili" cfsqltype="cf_sql_nvarchar">
         </cfquery>
 
-        <cfif qSonKullanilan.recordCount>
-            <cfset konuID=val(qSonKullanilan.konuID)>
-            <cfset konuKaynagi="son kullanılan konu">
+        <cfset eksikSayisi=uretilecek-val(qMevcutUretim.adet)>
+
+        <cfif eksikSayisi LTE 0>
+            <cfoutput>#qProgram.dersAdi#: zaten tamam,atlandı#chr(10)#</cfoutput>
+            <cfcontinue>
+        </cfif>
+
+        <cfquery name="qPlan" datasource="#application.DSN#">
+            SELECT konuID
+            FROM GunlukKonuPlani
+            WHERE planTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
+            AND dersID=<cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">
+        </cfquery>
+
+        <cfif qPlan.recordCount>
+            <cfset konuID=val(qPlan.konuID)>
+            <cfset konuKaynagi="öğretmen seçimi">
         <cfelse>
-            <cfquery name="qIlkKonu" datasource="#application.DSN#">
+            <cfquery name="qSonKullanilan" datasource="#application.DSN#">
                 SELECT TOP 1 konuID
-                FROM Konular
+                FROM GunlukKonuPlani
                 WHERE dersID=<cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">
-                AND aktifMi=1
-                ORDER BY siraNo
+                AND kullanildiMi=1
+                ORDER BY planTarihi DESC
             </cfquery>
 
-            <cfif qIlkKonu.recordCount>
-                <cfset konuID=val(qIlkKonu.konuID)>
-                <cfset konuKaynagi="varsayılan ilk konu">
+            <cfif qSonKullanilan.recordCount>
+                <cfset konuID=val(qSonKullanilan.konuID)>
+                <cfset konuKaynagi="son kullanılan konu">
+            <cfelse>
+                <cfquery name="qIlkKonu" datasource="#application.DSN#">
+                    SELECT TOP 1 konuID
+                    FROM Konular
+                    WHERE dersID=<cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">
+                    AND aktifMi=1
+                    ORDER BY siraNo
+                </cfquery>
+
+                <cfif qIlkKonu.recordCount>
+                    <cfset konuID=val(qIlkKonu.konuID)>
+                    <cfset konuKaynagi="varsayılan ilk konu">
+                </cfif>
             </cfif>
         </cfif>
-    </cfif>
 
-    <cfif NOT konuID>
-        <cfquery datasource="#application.DSN#">
-            INSERT INTO UretimLog(calismaTarihi,dersID,durum,hataMesaji)
-            VALUES(
-            <cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">,
-            <cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">,
-            <cfqueryparam value="hatali" cfsqltype="cf_sql_nvarchar">,
-            <cfqueryparam value="Bu ders için hiç konu tanımlanmamış" cfsqltype="cf_sql_longvarchar">
-            )
-        </cfquery>
-
-        <cfset toplamHatali=toplamHatali+1>
-        <cfoutput>#qProgram.dersAdi#: konu yok,atlandı#chr(10)#</cfoutput>
-        <cfcontinue>
-    </cfif>
-
-    <cfoutput>#qProgram.dersAdi# (#konuKaynagi#) - #eksikSayisi# soru#chr(10)#</cfoutput>
-
-    <cfloop from="1" to="#eksikSayisi#" index="s">
-        <cfset uretim={basari=false,soruID=0,hata=""}>
-
-        <cftry>
-            <cfset uretim=aiNesnesi.soruUretme(
-                dersID=dersID,
-                konuID=konuID,
-                yayinTarihi=bugun
-                )>
-
-            <cfcatch type="any">
-                <cfset uretim.hata="İstisna:" & cfcatch.message>
-            </cfcatch>
-        </cftry>
-
-        <cfif uretim.basari>
+        <cfif NOT konuID>
             <cfquery datasource="#application.DSN#">
-                INSERT INTO UretimLog(calismaTarihi,dersID,konuID,durum,uretilenSoruID)
+                INSERT INTO UretimLog(calismaTarihi,dersID,durum,hataMesaji)
                 VALUES(
                 <cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">,
                 <cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">,
-                <cfqueryparam value="#konuID#" cfsqltype="cf_sql_integer">,
-                <cfqueryparam value="basarili" cfsqltype="cf_sql_nvarchar">,
-                <cfqueryparam value="#val(uretim.soruID)#" cfsqltype="cf_sql_integer">
-                )
-            </cfquery>
-
-            <cfset toplamBasarili=toplamBasarili+1>
-            <cfoutput>  #s#. soru üretildi (ID:#uretim.soruID#)#chr(10)#</cfoutput>
-        <cfelse>
-            <cfquery datasource="#application.DSN#">
-                INSERT INTO UretimLog(calismaTarihi,dersID,konuID,durum,hataMesaji)
-                VALUES(
-                <cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">,
-                <cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">,
-                <cfqueryparam value="#konuID#" cfsqltype="cf_sql_integer">,
                 <cfqueryparam value="hatali" cfsqltype="cf_sql_nvarchar">,
-                <cfqueryparam value="#left(uretim.hata,4000)#" cfsqltype="cf_sql_longvarchar">
+                <cfqueryparam value="Bu ders için hiç konu tanımlanmamış" cfsqltype="cf_sql_longvarchar">
                 )
             </cfquery>
 
             <cfset toplamHatali=toplamHatali+1>
-            <cfoutput>  #s#. soru HATA: #left(uretim.hata,150)##chr(10)#</cfoutput>
+            <cfoutput>#qProgram.dersAdi#: konu yok,atlandı#chr(10)#</cfoutput>
+            <cfcontinue>
         </cfif>
 
-        <cfset sleep(6000)>
-    </cfloop>
+        <cfoutput>#qProgram.dersAdi# (#konuKaynagi#) - #eksikSayisi# soru#chr(10)#</cfoutput>
 
-    <cfquery datasource="#application.DSN#">
-        UPDATE GunlukKonuPlani
-        SET kullanildiMi=1
-        WHERE planTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
-        AND dersID=<cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">
-    </cfquery>
-</cfloop>
+        <cfloop from="1" to="#eksikSayisi#" index="s">
+            <cfset uretim={basari=false,soruID=0,hata=""}>
+
+            <cftry>
+                <cfset uretim=aiNesnesi.soruUretme(
+                    dersID=dersID,
+                    konuID=konuID,
+                    yayinTarihi=bugun
+                    )>
+
+                <cfcatch type="any">
+                    <cfset uretim.hata="İstisna:" & cfcatch.message>
+                </cfcatch>
+            </cftry>
+
+            <cfif uretim.basari>
+                <cfquery datasource="#application.DSN#">
+                    INSERT INTO UretimLog(calismaTarihi,dersID,konuID,durum,uretilenSoruID)
+                    VALUES(
+                    <cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">,
+                    <cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">,
+                    <cfqueryparam value="#konuID#" cfsqltype="cf_sql_integer">,
+                    <cfqueryparam value="basarili" cfsqltype="cf_sql_nvarchar">,
+                    <cfqueryparam value="#val(uretim.soruID)#" cfsqltype="cf_sql_integer">
+                    )
+                </cfquery>
+
+                <cfset toplamBasarili=toplamBasarili+1>
+                <cfoutput>  #s#. soru üretildi (ID:#uretim.soruID#)#chr(10)#</cfoutput>
+            <cfelse>
+                <cfquery datasource="#application.DSN#">
+                    INSERT INTO UretimLog(calismaTarihi,dersID,konuID,durum,hataMesaji)
+                    VALUES(
+                    <cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">,
+                    <cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">,
+                    <cfqueryparam value="#konuID#" cfsqltype="cf_sql_integer">,
+                    <cfqueryparam value="hatali" cfsqltype="cf_sql_nvarchar">,
+                    <cfqueryparam value="#left(uretim.hata,4000)#" cfsqltype="cf_sql_longvarchar">
+                    )
+                </cfquery>
+
+                <cfset toplamHatali=toplamHatali+1>
+                <cfoutput>  #s#. soru HATA: #left(uretim.hata,150)##chr(10)#</cfoutput>
+            </cfif>
+
+            <cfset sleep(6000)>
+        </cfloop>
+
+        <cfquery datasource="#application.DSN#">
+            UPDATE GunlukKonuPlani
+            SET kullanildiMi=1
+            WHERE planTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
+            AND dersID=<cfqueryparam value="#dersID#" cfsqltype="cf_sql_integer">
+        </cfquery>
+    </cfloop>
+</cflock>
 
 <cfif toplamBasarili OR toplamHatali>
     <cfquery name="qMudurler" datasource="#application.DSN#">

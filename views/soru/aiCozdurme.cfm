@@ -12,8 +12,11 @@
 <cfset ogretmenMi=(val(SESSION.rol) EQ application.rol.ogretmen OR val(SESSION.rol) EQ application.rol.mudur)>
 
 <cfquery name="qYetki" datasource="#application.DSN#">
-    SELECT cevapID
-    FROM Cevaplar
+    SELECT cevapID AS kayit FROM Cevaplar
+    WHERE soruID=<cfqueryparam value="#soruID#" cfsqltype="cf_sql_integer">
+    AND kullaniciID=<cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">
+    UNION ALL
+    SELECT odevCevapID FROM OdevCevaplari
     WHERE soruID=<cfqueryparam value="#soruID#" cfsqltype="cf_sql_integer">
     AND kullaniciID=<cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">
 </cfquery>
@@ -45,14 +48,9 @@
 <cfset aiNesnesi=createObject("component","lgs.ai")>
 <cfset aiSonuc=aiNesnesi.cozumUretme(soruID=soruID,kullaniciID=val(SESSION.kullaniciID))>
 
-<cfif NOT aiSonuc.basari>
-    <cfoutput>#aiSonuc.hata#</cfoutput>
-    <cfabort>
-</cfif>
-
 <cfif aiSonuc.basari>
     <cflocation url="#donusAdresi#&ai=1" addtoken="false">
-<cfelseif findNoCase("okunamadi",aiSonuc.hata)>
+<cfelseif findNoCase("okunamad",aiSonuc.hata)>
     <cflocation url="#donusAdresi#&hata=okunamadi" addtoken="false">
 <cfelse>
     <cflocation url="#donusAdresi#&hata=ai" addtoken="false">

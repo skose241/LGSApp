@@ -55,7 +55,7 @@
                 <cfcookie name="beniHatirla" value="#oturumToken#" expires="30" httponly="true" secure="true">
             </cfif>
 
-            <cfif len(trim(URL.donus)) AND left(URL.donus,1) EQ "/">
+            <cfif reFind("^/[^/\\]",URL.donus)>
                 <cflocation url="#URL.donus#" addtoken="false">
             <cfelse>
                 <cflocation url="#application.kokYol#/anaSayfa.cfm" addtoken="false">

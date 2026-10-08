@@ -28,7 +28,7 @@
 
                 <cfif structKeyExists(FORM,alanAdi) AND val(FORM[alanAdi])>
                     <cfif mudurMu OR val(application.qDers.dersID) EQ bransDersID>
-                        <cfset gecmisMi=(suankiSaat GTE sonSecimSaati)>
+                        <cfset gecmisMi=(g EQ 0 AND suankiSaat GTE sonSecimSaati)>
 
                         <cfif NOT gecmisMi>
                             <cfquery datasource="#application.DSN#">

@@ -98,7 +98,7 @@
     </cfif>
 </cfloop>
 
-<cfif NOT ogretmenMi AND cevaplanan EQ qSorular.recordCount AND qSorular.recordCount>
+<cfif listFind("#application.odevDurum.taslak#,#application.odevDurum.planlandi#",qOdev.durum) AND NOT ogretmenMi>
     <cflocation url="#application.kokYol#/views/odev/odevSonuc.cfm?odevID=#odevID#" addtoken="false">
 </cfif>
 

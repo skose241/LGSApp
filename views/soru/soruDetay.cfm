@@ -34,7 +34,26 @@
 <cfset benimSorum=(val(qSoru.kullaniciID) EQ val(SESSION.kullaniciID))>
 <cfset ogretmenMi=(val(SESSION.rol) EQ application.rol.ogretmen OR val(SESSION.rol) EQ application.rol.mudur)>
 
-<cfif structKeyExists(FORM,"cevapGonder")>
+<cfquery name="qOdevBilgi" datasource="#application.DSN#">
+    SELECT TOP 1 o.odevID,o.durum
+    FROM OdevSorulari os
+    INNER JOIN Odevler o ON o.odevID=os.odevID
+    WHERE os.soruID=<cfqueryparam value="#soruID#" cfsqltype="cf_sql_integer">
+</cfquery>
+
+<cfset odevSorusu=(qOdevBilgi.recordCount GT 0)>
+<cfset odevKapandiMi=(odevSorusu AND qOdevBilgi.durum EQ application.odevDurum.kapandi)>
+<cfset gorselYol=(odevSorusu ? application.odevGorselYol : application.soruGorselYol)>
+
+<cfif odevSorusu AND NOT ogretmenMi AND NOT listFind("#application.odevDurum.yayinda#,#application.odevDurum.kapandi#",qOdevBilgi.durum)>
+    <cflocation url="#application.kokYol#/views/odev/odevListesi.cfm" addtoken="false">
+<cfelseif odevSorusu AND NOT odevKapandiMi>
+    <div class="hedef-kutu">Bu soru bir ödeve ait.Cevabını ödev sayfasından vermelisin
+        <a class="bag" href="#application.kokYol#/views/odev/odevDetay.cfm?odevID=#qOdevBilgi.odevID#">Ödeve Git</a>
+    </div>
+</cfif>
+
+<cfif structKeyExists(FORM,"cevapGonder") AND NOT odevSorusu>
     <cfset secilenDeger=ucase(trim(FORM.verilenCevap))>
     <cfset cozumMetniDeger=trim(FORM.cozumMetni)>
     <cfset cozumDosyaAdi="">
@@ -52,6 +71,8 @@
         <cfset hataMesaji="Çözümünü yazmalı veya kağıt üzerindeki çözümünün fotoğrafını yüklemelisiniz">
     <cfelseif len(cozumMetniDeger) AND NOT gorselVarMi AND len(cozumMetniDeger) LT minKarakter>
         <cfset hataMesaji="Çözüm açıklaması en az #minKarakter# karakter olmalıdır">
+    <cfelseif odevSorusu>
+        <cfset hataMesaji="Bu soru bir ödeve ait.Cevabınızı ödev sayfasından veriniz">
     <cfelse>
         <cfset dogruMu=(compare(secilenDeger,trim(qSoru.dogruCevap)) EQ 0)>
 
@@ -145,14 +166,19 @@
 </cfif>
 
 <cfquery name="qCevabim" datasource="#application.DSN#">
-    SELECT verilenCevap,dogruMu,cevapTarihi
+    SELECT verilenCevap,dogruMu
     FROM Cevaplar
+    WHERE soruID=<cfqueryparam value="#soruID#" cfsqltype="cf_sql_integer">
+    AND kullaniciID=<cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">
+    UNION ALL
+    SELECT verilenCevap,dogruMu
+    FROM OdevCevaplari
     WHERE soruID=<cfqueryparam value="#soruID#" cfsqltype="cf_sql_integer">
     AND kullaniciID=<cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">
 </cfquery>
 
 <cfset cevapVerdimMi=(qCevabim.recordCount GT 0)>
-<cfset gorebilirMiyim=(cevapVerdimMi OR benimSorum OR ogretmenMi)>
+<cfset gorebilirMiyim=(cevapVerdimMi OR benimSorum OR ogretmenMi OR (odevSorusu AND NOT odevKapandiMi))>
 
 <cfif structKeyExists(FORM,"yorumGonder")>
     <cfset yorumMetniDeger=trim(FORM.yorumMetni)>
@@ -175,7 +201,7 @@
             )
         </cfquery>
 
-        <cfset basariMesaji="Yorumunuz eklendi">
+        <cflocation url="#cgi.script_name#?id=#soruID#&cozumID=#hedefCozumID#&yorumEklendi=1" addtoken="false">
     </cfif>
 </cfif>
 
@@ -198,8 +224,8 @@
 </cfquery>
 
 <cfquery name="qIstatistik" datasource="#application.DSN#">
-    SELECT COUNT(*) AS toplam,SUM(CASE WHEN dogruMu=1 THEN 1 ELSE 0 END) AS dogru
-    FROM Cevaplar
+    SELECT toplamCevap AS toplam,toplamCevap-yanlisSayisi AS dogru
+    FROM vw_SoruIstatistik
     WHERE soruID=<cfqueryparam value="#soruID#" cfsqltype="cf_sql_integer">
 </cfquery>
 
@@ -274,7 +300,7 @@
 
                 <cfif len(qSoru.soruGorsel)>
                     <img
-                        class="soru-gorsel" src="#application.soruGorselYol##qSoru.soruGorsel#" alt="Soru görseli">
+                        class="soru-gorsel" src="#gorselYol##qSoru.soruGorsel#" alt="Soru görseli">
                 </cfif>
 
                 <div class="eylem-seridi ust-bosluk">
@@ -389,7 +415,7 @@
                 </section>
             </cfif>
 
-            <cfif cevapVerdimMi AND NOT aiCozumuVarMi>
+            <cfif (cevapVerdimMi OR ogretmenMi) AND NOT aiCozumuVarMi>
                 <section class="kart">
                     <div class="kart__govde">
                         <form method="post" action="#application.kokYol#/views/soru/aiCozdurme.cfm">

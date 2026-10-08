@@ -9,6 +9,7 @@
     <cfset this.sessionCookie.httpOnly=true>
     <cfset this.sessionCookie.secure=true>
     <cfset this.scriptProtect="none">
+    <cfset application.yerelURL="http://localhost:8888">
 
     <cffunction name="envDegeri" access="private" returntype="string" output="false">
         <cfargument name="ad" type="string" required="true">

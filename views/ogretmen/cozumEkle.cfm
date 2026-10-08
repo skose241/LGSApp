@@ -55,7 +55,7 @@
                 <cfif puanFarki>
                     <cfquery datasource="#application.DSN#">
                         UPDATE Kullanicilar
-                        SET puan=CASE WHEN puan+<cfqueryparam value="#puanFarki#" cfsqltype="cf_sql_integer"> LT 0 THEN 0 ELSE puan+<cfqueryparam value="#puanFarki#" cfsqltype="cf_sql_integer"> END
+                        SET puan=CASE WHEN puan+<cfqueryparam value="#puanFarki#" cfsqltype="cf_sql_integer"> < 0 THEN 0 ELSE puan+<cfqueryparam value="#puanFarki#" cfsqltype="cf_sql_integer"> END
                         WHERE kullaniciID=<cfqueryparam value="#val(qEskiDurum.kullaniciID)#" cfsqltype="cf_sql_integer">
                     </cfquery>
                 </cfif>

@@ -85,7 +85,6 @@
                             <cfif val(SESSION.rol) EQ application.rol.mudur>
                                 <div class="menu-baslik">Yönetim</div>
                                 <a class="menu-baglanti" href="#application.kokYol#/views/yonetim/kullaniciOlusturma.cfm">Kullanıcılar</a>
-                                <a class="menu-baglanti" href="#application.kokYol#/views/yonetim/konuPlani.cfm">Konu Planı</a>
                                 <a class="menu-baglanti" href="#application.kokYol#/views/yonetim/uretimLog.cfm">Üretim Günlüğü</a>
                             </cfif>
                         </nav>

@@ -13,7 +13,7 @@
         <cfif val(SESSION.rol) EQ application.rol.ogretmen>
             WHERE o.ogretmenID=<cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">
         </cfif>
-        ORDER BY o.baslangicTarihi DESC
+        ORDER BY CASE WHEN o.durum=N'yayinda' THEN 0 ELSE 1 END,o.bitisTarihi DESC
     </cfquery>
 <cfelse>
     <cfquery name="qOdevler" datasource="#application.DSN#">
@@ -23,7 +23,7 @@
         FROM Odevler o
         INNER JOIN Dersler d ON d.dersID=o.dersID
         WHERE o.durum IN (<cfqueryparam value="#application.odevDurum.yayinda#" cfsqltype="cf_sql_nvarchar">,<cfqueryparam value="#application.odevDurum.kapandi#" cfsqltype="cf_sql_nvarchar">)
-        ORDER BY o.durum,o.bitisTarihi DESC
+        ORDER BY CASE WHEN o.durum=N'yayinda' THEN 0 ELSE 1 END,o.bitisTarihi DESC
     </cfquery>
 </cfif>
 

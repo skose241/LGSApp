@@ -22,12 +22,12 @@
             <script src="#application.kokYol#/assets/vendor/katex/auto-render.min.js"></script>
             <script src="#application.kokYol#/assets/js/custom.js?v=#application.varlikSurum#"></script>
             <script src="#application.kokYol#/assets/js/topluYukle.js?v=#application.varlikSurum#"></script>
+
+            <script>
+                if ("serviceWorker" in navigator) {
+                    navigator.serviceWorker.register("#application.kokYol#/service-worker.js");
+                }
+            </script>
         </body>
     </html>
 </cfoutput>
-
-<script>
-    if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("#application.kokYol#/service-worker.js");
-    }
-</script>

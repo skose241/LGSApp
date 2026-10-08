@@ -26,7 +26,7 @@
 </cfquery>
 
 <cfquery name="qSupheli" datasource="#application.DSN#">
-    SELECT s.soruID,s.soruGorsel,s.dogruCevap,d.dersAdi
+    SELECT s.soruID,s.kaynak,s.soruMetni,s.soruGorsel,s.dogruCevap,d.dersAdi
     FROM Sorular s
     INNER JOIN Dersler d ON d.dersID=s.dersID
     WHERE s.cevapSupheli=1

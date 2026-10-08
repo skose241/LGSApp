@@ -37,6 +37,10 @@
     <cfset sayfaNo=1>
 </cfif>
 
+<cfif NOT listFind("dogru,yanlis,sordugu,begeni",URL.sekme)>
+    <cfset URL.sekme="dogru">
+</cfif>
+
 <cfif NOT gizliGorebilir AND listFind("dogru,yanlis,begeni",URL.sekme)>
     <cfset URL.sekme="sordugu">
 </cfif>
