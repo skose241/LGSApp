@@ -372,7 +372,7 @@
         <cfif gorebilirMiyim>
             <cfif len(qSoru.aciklama)>
                 <section class="kart">
-                    <div class="kart__baslik">Soruyu Sahibinin Açıklaması:</div>
+                    <div class="kart__baslik">Soru Sahibinin Açıklaması:</div>
                     <div class="kart__govde">#encodeForHTML(qSoru.aciklama)#</div>
                 </section>
             </cfif>

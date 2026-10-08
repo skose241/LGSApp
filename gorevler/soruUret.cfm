@@ -1,4 +1,4 @@
-<cfsetting requesttimeout="1800">
+﻿<cfsetting requesttimeout="1800">
 <cfsetting showdebugoutput="false">
 <cfcontent type="text/plain; charset=utf-8" reset="true">
 

@@ -620,7 +620,7 @@
                     <cfqueryparam value="#left(trim(veri.c),500)#" cfsqltype="cf_sql_nvarchar">,
                     <cfqueryparam value="#left(trim(veri.d),500)#" cfsqltype="cf_sql_nvarchar">,
                     <cfqueryparam value="#ucase(trim(veri.dogru))#" cfsqltype="cf_sql_nchar">,
-                    <cfqueryparam value="#trim(veri.aciklama)#" cfsqltype="cf_sql_longvarchar">,
+                    <cfqueryparam value="" cfsqltype="cf_sql_longvarchar" null="true">,
                     <cfqueryparam value="#application.kaynak.ai#" cfsqltype="cf_sql_tinyint">,
                     <cfqueryparam value="#arguments.yayinTarihi#" cfsqltype="cf_sql_date">,
                     0,
