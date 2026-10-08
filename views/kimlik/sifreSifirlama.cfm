@@ -1,4 +1,4 @@
-<cfset sifirlamaAcikMi=false>
+﻿<cfset sifirlamaAcikMi=false>
 <cfif NOT sifirlamaAcikMi>
     <cfinclude template="/lgs/views/includes/baslik.cfm">
 

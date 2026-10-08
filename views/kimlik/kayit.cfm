@@ -1,4 +1,4 @@
-<cfset kayitAcikMi=false>
+﻿<cfset kayitAcikMi=false>
 <cfif NOT kayitAcikMi>
     <cfinclude template="/lgs/views/includes/baslik.cfm">
 

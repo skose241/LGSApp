@@ -1,4 +1,4 @@
-<cfinclude template="/lgs/views/includes/yetki.cfm">
+﻿<cfinclude template="/lgs/views/includes/yetki.cfm">
 
 <cfparam name="URL.id" default="0">
 <cfparam name="URL.sekme" default="dogru">

@@ -25,3 +25,9 @@
         </body>
     </html>
 </cfoutput>
+
+<script>
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("#application.kokYol#/service-worker.js");
+    }
+</script>

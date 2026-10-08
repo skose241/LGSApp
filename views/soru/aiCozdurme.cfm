@@ -1,4 +1,4 @@
-<cfsetting requesttimeout="120">
+﻿<cfsetting requesttimeout="120">
 <cfinclude template="/lgs/views/includes/yetki.cfm">
 
 <cfparam name="FORM.soruID" default="0">
