@@ -1,6 +1,7 @@
 ﻿<cfparam name="sayfaBasligi" default="LGS Soru & Çözüm Platformu">
 <cfset girisYapildiMi=structKeyExists(SESSION,"kullaniciID") AND val(SESSION.kullaniciID)>
 <cfset okunmamisBildirim=0>
+<cfset gunAdlari="Pazar,Pazartesi,Salı,Çarşamba,Perşembe,Cuma,Cumartesi">
 
 <cfif girisYapildiMi>
     <cfquery name="qBildirimSayi" datasource="#application.DSN#">
@@ -77,6 +78,7 @@
                                 <a class="menu-baglanti" href="#application.kokYol#/views/ogretmen/ogretmenPanel.cfm">Panel</a>
                                 <a class="menu-baglanti" href="#application.kokYol#/views/ogretmen/cozumBekleyenler.cfm">Çözüm Bekleyenler</a>
                                 <a class="menu-baglanti" href="#application.kokYol#/views/odev/odevOlusturma.cfm">Ödev Oluştur</a>
+                                <a class="menu-baglanti" href="#application.kokYol#/views/ogretmen/konuSecimi.cfm">Günlük Konular</a>
                             </cfif>
 
                             <cfif val(SESSION.rol) EQ application.rol.mudur>
