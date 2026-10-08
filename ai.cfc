@@ -508,4 +508,160 @@
 
         <cfreturn sonuc>
     </cffunction>
+
+    <cffunction name="soruUretme" returntype="struct" output="false">
+        <cfargument name="dersID" type="numeric" required="true">
+        <cfargument name="konuID" type="numeric" required="true">
+        <cfargument name="yayinTarihi" type="date" required="true">
+        <cfargument name="zamanAsimi" type="numeric" required="false" default="120">
+        <cfset var sonuc={basari=false,soruID=0,hata=""}>
+        <cfset var qBilgi="">
+        <cfset var qGecmis="">
+        <cfset var aiCevap="">
+        <cfset var istem="">
+        <cfset var gecmisMetin="">
+        <cfset var ham="">
+        <cfset var veri="">
+        <cfset var harfler="A,B,C,D">
+
+        <cfquery name="qBilgi" datasource="#application.DSN#">
+            SELECT d.dersAdi,k.konuAdi
+            FROM Dersler d
+            INNER JOIN Konular k ON k.konuID=<cfqueryparam value="#arguments.konuID#" cfsqltype="cf_sql_integer">
+            WHERE d.dersID=<cfqueryparam value="#arguments.dersID#" cfsqltype="cf_sql_integer">
+        </cfquery>
+
+        <cfif NOT qBilgi.recordCount>
+            <cfset sonuc.hata="Ders veya konu bulunamadı">
+            <cfreturn sonuc>
+        </cfif>
+
+        <cfquery name="qGecmis" datasource="#application.DSN#">
+            SELECT TOP 5 soruMetni
+            FROM Sorular
+            WHERE konuID=<cfqueryparam value="#arguments.konuID#" cfsqltype="cf_sql_integer">
+            AND kaynak=<cfqueryparam value="#application.kaynak.ai#" cfsqltype="cf_sql_tinyint">
+            AND soruMetni IS NOT NULL
+            ORDER BY olusturmaTarihi DESC
+        </cfquery>
+
+        <cfloop query="qGecmis">
+            <cfset gecmisMetin=gecmisMetin & chr(10) & "- " & left(qGecmis.soruMetni,180)>
+        </cfloop>
+
+        <cfset istem="Sen LGS sınavı için soru hazırlayan deneyimli bir #qBilgi.dersAdi# öğretmenisin.
+                8.sınıf düzeyinde,LGS çıkmış soru formatında TEK bir çoktan seçmeli soru hazırla.
+                Konu: #qBilgi.konuAdi#
+                Kurallar:
+                -Soru 8.sınıf kazanımlarına uygun olmalı,üst düzey yöntem veya terim içermemeli.
+                -LGS tarzında olmalı: yorum ve muhakeme gerektiren,günlük hayatla ilişkili bir kurgu kullan.
+                -Dört şık olmalı ve yalnızca biri doğru olmalı.Diğer üç şık öğrencinin yapabileceği tipik hatalara karşılık gelmeli.
+                -Soru metni görsel,tablo,şekil veya grafik gerektirmemeli.Her şey yazıyla ifade edilebilmeli.
+                -Matematiksel ifadeleri LaTeX ile yaz,satır içi için tek dolar kullan.Örnek: \$x^2+3x\$
+                -Markdown,yıldız,başlık veya kod bloğu kullanma.
+                -Açıklama kısmında çözümü adım adım anlat,en fazla 200 kelime.
+                Yanıtını SADECE aşağıdaki JSON biçiminde ver,başka hiçbir şey yazma:
+                {""soru"":""soru metni"",""a"":""A şıkkı"",""b"":""B şıkkı"",""c"":""C şıkkı"",""d"":""D şıkkı"",""dogru"":""A"",""aciklama"":""çözüm""}">
+
+        <cfif len(gecmisMetin)>
+            <cfset istem=istem & chr(10) & chr(10) & "Bu konuda daha önce şu sorular üretildi.Bunlara benzemeyen,farklı bir kurgu ve farklı sayılar kullan:" & gecmisMetin>
+        </cfif>
+
+        <cftry>
+            <cfset aiCevap=metinUretme(prompt=istem,amac="soru",zamanAsimi=arguments.zamanAsimi,yenidenDene=true)>
+
+            <cfif NOT aiCevap.basari>
+                <cfset sonuc.hata=aiCevap.hata>
+                <cfreturn sonuc>
+            </cfif>
+
+            <cfset ham=trim(aiCevap.metin)>
+            <cfset ham=reReplace(ham,"^```[a-zA-Z]*","")>
+            <cfset ham=reReplace(ham,"```$","")>
+            <cfset ham=trim(ham)>
+
+            <cfif NOT isJSON(ham)>
+                <cfset sonuc.hata="Yanıt JSON biçiminde değil:" & left(ham,200)>
+                <cfreturn sonuc>
+            </cfif>
+
+            <cfset veri=deserializeJSON(ham)>
+
+            <cfif NOT structKeyExists(veri,"soru") OR NOT structKeyExists(veri,"dogru") OR NOT structKeyExists(veri,"aciklama")>
+                <cfset sonuc.hata="Yanıtta zorunlu alanlar eksik">
+                <cfreturn sonuc>
+            </cfif>
+
+            <cfif NOT listFind(harfler,ucase(trim(veri.dogru)))>
+                <cfset sonuc.hata="Doğru cevap geçersiz:" & veri.dogru>
+                <cfreturn sonuc>
+            </cfif>
+
+            <cfif NOT len(trim(veri.soru)) OR NOT len(trim(veri.a)) OR NOT len(trim(veri.b)) OR NOT len(trim(veri.c)) OR NOT len(trim(veri.d))>
+                <cfset sonuc.hata="Soru metni veya şıklar boş">
+                <cfreturn sonuc>
+            </cfif>
+
+            <cfif NOT len(trim(veri.aciklama)) OR len(trim(veri.aciklama)) LT 50>
+                <cfset sonuc.hata="Açıklama yetersiz">
+                <cfreturn sonuc>
+            </cfif>
+
+            <cftransaction>
+                <cfquery datasource="#application.DSN#" result="kayit">
+                    INSERT INTO Sorular(kullaniciID,dersID,konuID,soruMetni,secenekA,secenekB,secenekC,secenekD,dogruCevap,aciklama,kaynak,yayinTarihi,yayinlandiMi,aktifMi)
+                    VALUES(
+                    <cfqueryparam value="#application.aiKullaniciID#" cfsqltype="cf_sql_integer">,
+                    <cfqueryparam value="#arguments.dersID#" cfsqltype="cf_sql_integer">,
+                    <cfqueryparam value="#arguments.konuID#" cfsqltype="cf_sql_integer">,
+                    <cfqueryparam value="#trim(veri.soru)#" cfsqltype="cf_sql_longvarchar">,
+                    <cfqueryparam value="#left(trim(veri.a),500)#" cfsqltype="cf_sql_nvarchar">,
+                    <cfqueryparam value="#left(trim(veri.b),500)#" cfsqltype="cf_sql_nvarchar">,
+                    <cfqueryparam value="#left(trim(veri.c),500)#" cfsqltype="cf_sql_nvarchar">,
+                    <cfqueryparam value="#left(trim(veri.d),500)#" cfsqltype="cf_sql_nvarchar">,
+                    <cfqueryparam value="#ucase(trim(veri.dogru))#" cfsqltype="cf_sql_nchar">,
+                    <cfqueryparam value="#trim(veri.aciklama)#" cfsqltype="cf_sql_longvarchar">,
+                    <cfqueryparam value="#application.kaynak.ai#" cfsqltype="cf_sql_tinyint">,
+                    <cfqueryparam value="#arguments.yayinTarihi#" cfsqltype="cf_sql_date">,
+                    0,
+                    1
+                    )
+                </cfquery>
+
+                <cfset sonuc.soruID=val(kayit.generatedKey)>
+
+                <cfquery datasource="#application.DSN#">
+                    INSERT INTO Cozumler(soruID,kullaniciID,cozumTipi,cozumMetni)
+                    VALUES(
+                    <cfqueryparam value="#sonuc.soruID#" cfsqltype="cf_sql_integer">,
+                    <cfqueryparam value="#application.aiKullaniciID#" cfsqltype="cf_sql_integer">,
+                    <cfqueryparam value="#application.cozumTipi.ai#" cfsqltype="cf_sql_tinyint">,
+                    <cfqueryparam value="Doğru Cevap: #ucase(trim(veri.dogru))# şıkkıdır.#chr(10)##chr(10)#Açıklama: #trim(veri.aciklama)#" cfsqltype="cf_sql_longvarchar">
+                    )
+                </cfquery>
+            </cftransaction>
+
+            <cfset logKaydetme(
+                kullaniciID=0,
+                soruID=sonuc.soruID,
+                islemTipi="soru_uretim",
+                girdi=left(istem,2000),
+                cikti=ham
+                )>
+
+            <cfset sonuc.basari=true>
+
+            <cfcatch type="any">
+                <cfset sonuc.hata="Soru kaydedilemedi:" & cfcatch.message>
+                <cfset hataYazma(
+                    sayfa="/LGSApp/ai.cfc",
+                    islem="soruUretme",
+                    mesaj=cfcatch.message,
+                    detay=cfcatch.detail
+                    )>
+            </cfcatch>
+        </cftry>
+
+        <cfreturn sonuc>
+    </cffunction>
 </cfcomponent>
