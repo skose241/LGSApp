@@ -68,6 +68,7 @@
                         <nav>
                             <a class="menu-baglanti" href="#application.kokYol#/anaSayfa.cfm">Ana Sayfa</a>
                             <a class="menu-baglanti" href="#application.kokYol#/views/odev/odevListesi.cfm">Ödevler</a>
+                            <a class="menu-baglanti" href="#application.kokYol#/views/profil/liderlikTablosu.cfm">Liderlik Tablosu</a>
 
                             <cfif val(SESSION.rol) EQ application.rol.ogrenci>
                                 <a class="menu-baglanti" href="#application.kokYol#/views/soru/soruEkle.cfm">Soru Ekle</a>
@@ -75,7 +76,7 @@
 
                             <cfif val(SESSION.rol) EQ application.rol.ogretmen OR val(SESSION.rol) EQ application.rol.mudur>
                                 <div class="menu-baslik">Öğretmen</div>
-                                <a class="menu-baglanti" href="#application.kokYol#/views/ogretmen/ogretmenPanel.cfm">Panel</a>
+                                <a class="menu-baglanti" href="#application.kokYol#/views/sikayet/sikayet.cfm">Şikayetler</a>
                                 <a class="menu-baglanti" href="#application.kokYol#/views/ogretmen/cozumBekleyenler.cfm">Çözüm Bekleyenler</a>
                                 <a class="menu-baglanti" href="#application.kokYol#/views/odev/odevOlusturma.cfm">Ödev Oluştur</a>
                                 <a class="menu-baglanti" href="#application.kokYol#/views/ogretmen/konuSecimi.cfm">Günlük Konular</a>

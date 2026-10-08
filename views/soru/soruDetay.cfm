@@ -277,6 +277,18 @@
                         class="soru-gorsel" src="#application.soruGorselYol##qSoru.soruGorsel#" alt="Soru görseli">
                 </cfif>
 
+                <div class="eylem-seridi ust-bosluk">
+                    <form class="eylem-form" method="post" action="#application.kokYol#/views/soru/begeniToggle.cfm">
+                        <cfinclude template="/lgs/views/includes/csrfAlan.cfm">
+                        <input type="hidden" name="soruID" value="#soruID#">
+                        <button class="eylem" type="submit">Beğen</button>
+                    </form>
+
+                    <span class="eylem-seridi__bosluk"></span>
+
+                    <a class="eylem" href="#application.kokYol#/views/sikayet/sikayet.cfm?soruID=#soruID#">Bildir</a>
+                </div>
+
                 <cfif cevapVerdimMi>
                     <div class="sonuc <cfif qCevabim.dogruMu>sonuc--dogru<cfelse>sonuc--yanlis</cfif>">
                         <div class="sonuc__kutu">
