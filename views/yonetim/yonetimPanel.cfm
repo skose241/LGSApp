@@ -7,24 +7,34 @@
 
 <cfif structKeyExists(FORM,"gorevCalistir") AND structKeyExists(FORM,"csrf") AND compare(FORM.csrf,SESSION.csrf) EQ 0>
     <cfif listFind("soruUret,soruYayinla,odevKapat",FORM.gorevAdi)>
-        <cfsetting requesttimeout="1800">
+        <cfset gorevAdresi="#application.yerelURL##application.kokYol#/gorevler/#FORM.gorevAdi#.cfm">
 
-        <cftry>
-            <cfhttp method="GET"
-                url="http://localhost#(cgi.server_port NEQ 80 ? ':' & cgi.server_port : '')##application.kokYol#/gorevler/#FORM.gorevAdi#.cfm"
-                result="gorevCevap"
-                charset="UTF-8"
-                throwonerror="false"
-                timeout="1500">
-                <cfhttpparam type="url" name="token" value="#application.uretimToken#">
-            </cfhttp>
+        <cfif FORM.gorevAdi EQ "soruUret">
+            <cfthread name="gorev#getTickCount()#" action="run" adres="#gorevAdresi#" token="#application.uretimToken#">
+                <cfhttp method="GET" url="#attributes.adres#" throwonerror="false" timeout="1700">
+                    <cfhttpparam type="url" name="token" value="#attributes.token#">
+                </cfhttp>
+            </cfthread>
 
-            <cfset gorevSonucu=gorevCevap.fileContent>
+            <cfset gorevSonucu="Soru üretimi arka planda başlatıldı.Birkaç dakika sonra Üretim Günlüğü'nden takip edebilirsiniz">
+        <cfelse>
+            <cftry>
+                <cfhttp method="GET"
+                    url="#gorevAdresi#"
+                    result="gorevCevap"
+                    charset="UTF-8"
+                    throwonerror="false"
+                    timeout="90">
+                    <cfhttpparam type="url" name="token" value="#application.uretimToken#">
+                </cfhttp>
 
-            <cfcatch type="any">
-                <cfset gorevSonucu="Görev çalıştırılamadı:" & cfcatch.message>
-            </cfcatch>
-        </cftry>
+                <cfset gorevSonucu=gorevCevap.fileContent>
+
+                <cfcatch type="any">
+                    <cfset gorevSonucu="Görev çalıştırılamadı:" & cfcatch.message>
+                </cfcatch>
+            </cftry>
+        </cfif>
     </cfif>
 </cfif>
 

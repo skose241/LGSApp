@@ -17,7 +17,7 @@
     SELECT s.soruID,d.dersAdi
     FROM Sorular s
     INNER JOIN Dersler d ON d.dersID=s.dersID
-    WHERE s.yayinTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
+    WHERE s.yayinTarihi<=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
     AND s.yayinlandiMi=0
     AND s.aktifMi=1
     AND s.kaynak=<cfqueryparam value="#application.kaynak.ai#" cfsqltype="cf_sql_tinyint">
@@ -27,7 +27,7 @@
     <cfquery datasource="#application.DSN#">
         UPDATE Sorular
         SET yayinlandiMi=1
-        WHERE yayinTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
+        WHERE yayinTarihi<=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date">
         AND yayinlandiMi=0
         AND aktifMi=1
         AND kaynak=<cfqueryparam value="#application.kaynak.ai#" cfsqltype="cf_sql_tinyint">

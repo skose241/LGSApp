@@ -47,10 +47,6 @@
 
 <cfif odevSorusu AND NOT ogretmenMi AND NOT listFind("#application.odevDurum.yayinda#,#application.odevDurum.kapandi#",qOdevBilgi.durum)>
     <cflocation url="#application.kokYol#/views/odev/odevListesi.cfm" addtoken="false">
-<cfelseif odevSorusu AND NOT odevKapandiMi>
-    <div class="hedef-kutu">Bu soru bir ödeve ait.Cevabını ödev sayfasından vermelisin
-        <a class="bag" href="#application.kokYol#/views/odev/odevDetay.cfm?odevID=#qOdevBilgi.odevID#">Ödeve Git</a>
-    </div>
 </cfif>
 
 <cfif structKeyExists(FORM,"cevapGonder") AND NOT odevSorusu>
@@ -71,8 +67,6 @@
         <cfset hataMesaji="Çözümünü yazmalı veya kağıt üzerindeki çözümünün fotoğrafını yüklemelisiniz">
     <cfelseif len(cozumMetniDeger) AND NOT gorselVarMi AND len(cozumMetniDeger) LT minKarakter>
         <cfset hataMesaji="Çözüm açıklaması en az #minKarakter# karakter olmalıdır">
-    <cfelseif odevSorusu>
-        <cfset hataMesaji="Bu soru bir ödeve ait.Cevabınızı ödev sayfasından veriniz">
     <cfelse>
         <cfset dogruMu=(compare(secilenDeger,trim(qSoru.dogruCevap)) EQ 0)>
 
@@ -136,15 +130,17 @@
                     WHERE kullaniciID=<cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">
                 </cfquery>
 
-                <cfquery datasource="#application.DSN#">
-                    INSERT INTO Bildirimler(kullaniciID,bildirimTipi,mesaj,hedefURL)
-                    VALUES(
-                    <cfqueryparam value="#val(qSoru.kullaniciID)#" cfsqltype="cf_sql_integer">,
-                    <cfqueryparam value="cozum" cfsqltype="cf_sql_nvarchar">,
-                    <cfqueryparam value="#SESSION.kullaniciAd# sorunuza bir çözüm ekledi" cfsqltype="cf_sql_nvarchar">,
-                    <cfqueryparam value="#application.kokYol#/views/soru/soruDetay.cfm?id=#soruID#" cfsqltype="cf_sql_nvarchar">
-                    )
-                </cfquery>
+                <cfif val(qSoru.kaynak) NEQ application.kaynak.ai>
+                    <cfquery datasource="#application.DSN#">
+                        INSERT INTO Bildirimler(kullaniciID,bildirimTipi,mesaj,hedefURL)
+                        VALUES(
+                        <cfqueryparam value="#val(qSoru.kullaniciID)#" cfsqltype="cf_sql_integer">,
+                        <cfqueryparam value="cozum" cfsqltype="cf_sql_nvarchar">,
+                        <cfqueryparam value="#SESSION.kullaniciAd# sorunuza bir çözüm ekledi" cfsqltype="cf_sql_nvarchar">,
+                        <cfqueryparam value="#application.kokYol#/views/soru/soruDetay.cfm?id=#soruID#" cfsqltype="cf_sql_nvarchar">
+                        )
+                    </cfquery>
+                </cfif>
             </cftransaction>
 
             <cfset SESSION.puan=val(SESSION.puan)+kazanilanPuan>
@@ -178,7 +174,7 @@
 </cfquery>
 
 <cfset cevapVerdimMi=(qCevabim.recordCount GT 0)>
-<cfset gorebilirMiyim=(cevapVerdimMi OR benimSorum OR ogretmenMi OR (odevSorusu AND NOT odevKapandiMi))>
+<cfset gorebilirMiyim=(cevapVerdimMi OR benimSorum OR ogretmenMi OR odevKapandiMi)>
 
 <cfif structKeyExists(FORM,"yorumGonder")>
     <cfset yorumMetniDeger=trim(FORM.yorumMetni)>
@@ -201,7 +197,7 @@
             )
         </cfquery>
 
-        <cflocation url="#cgi.script_name#?id=#soruID#&cozumID=#hedefCozumID#&yorumEklendi=1" addtoken="false">
+        <cflocation url="#cgi.script_name#?id=#soruID#&yorumEklendi=1" addtoken="false">
     </cfif>
 </cfif>
 
@@ -244,6 +240,18 @@
     <div class="yigin">
         <cfif URL.yeni EQ "1">
             <div class="bildirim bildirim--basarili" role="status">Sorunuz yayınlandı<span class="bildirim__xp">+#application.ayar.puanSoruYukleme# XP</span></div>
+        </cfif>
+
+        <cfif structKeyExists(URL,"ai")>
+            <div class="bildirim bildirim--basarili" role="status">Yapay zeka çözümü eklendi</div>
+        </cfif>
+
+        <cfif structKeyExists(URL,"yorumEklendi")>
+            <div class="bildirim bildirim--basarili" role="status">Yorumunuz eklendi</div>
+        </cfif>
+
+        <cfif structKeyExists(URL,"bildirildi")>
+            <div class="bildirim bildirim--basarili" role="status">Bildiriminiz öğretmenlere iletildi</div>
         </cfif>
 
         <cfif structKeyExists(URL,"cozuldu") AND cevapVerdimMi>
@@ -336,6 +344,12 @@
                     <div class="hedef-kutu">Bu soruyu siz sordunuz.Gelen çözümleri aşağıdan takip edebilirsiniz</div>
                 <cfelseif ogretmenMi>
                     <div class="hedef-kutu">Doğru cevap: <strong>#qSoru.dogruCevap#</strong></div>
+                <cfelseif odevSorusu AND NOT odevKapandiMi>
+                    <div class="hedef-kutu">Bu soru bir ödeve ait.Cevabını ödev sayfasından vermelisin
+                        <a class="bag" href="#application.kokYol#/views/odev/odevDetay.cfm?odevID=#qOdevBilgi.odevID#">Ödeve Git</a>
+                    </div>
+                <cfelseif odevKapandiMi>
+                    <div class="hedef-kutu">Bu ödevin süresi doldu.Doğru cevap: <strong>#qSoru.dogruCevap#</strong></div>
                 </cfif>
             </div>
 
@@ -350,7 +364,7 @@
             </cfif>
         </section>
 
-        <cfif NOT cevapVerdimMi AND NOT benimSorum AND NOT ogretmenMi>
+        <cfif NOT cevapVerdimMi AND NOT benimSorum AND NOT ogretmenMi AND NOT odevSorusu>
             <section class="kart">
                 <div class="kart__baslik">Cevabınızı ve Çözümünüzü Gönderiniz</div>
 
@@ -472,7 +486,7 @@
                         <form class="mini-form" method="post" action="#cgi.script_name#?id=#soruID#">
                             <cfinclude template="/lgs/views/includes/csrfAlan.cfm">
                             <input type="hidden" name="cozumID" value="#buCozumID#">
-                            <input class="girdi" type="text" name="yorumMetni" maxlength="1000" placeholder="Bu çözüme ekleme yap" required>
+                            <input class="girdi" type="text" name="yorumMetni" maxlength="800" placeholder="Bu çözüme ekleme yap" required>
                             <button class="dugme dugme--ikincil" type="submit" name="yorumGonder" value="1">Gönder</button>
                         </form>
                     </div>
@@ -509,19 +523,22 @@
                     <form class="mini-form" method="post" action="#cgi.script_name#?id=#soruID#">
                         <cfinclude template="/lgs/views/includes/csrfAlan.cfm">
                         <input type="hidden" name="cozumID" value="0">
-                        <input class="girdi" type="text" name="yorumMetni" maxlength="1000" placeholder="Yorumunu yaz" required>
+                        <input class="girdi" type="text" name="yorumMetni" maxlength="800" placeholder="Yorumunu yaz" required>
                         <button class="dugme dugme--ikincil" type="submit" name="yorumGonder" value="1">Gönder</button>
                     </form>
                 </div>
             </section>
         <cfelse>
             <section class="kart">
-                <div class="kart__govde">
-                    <div class="bos-durum">
-                        <div class="bos-durum__daire"></div>
+                <div class="bos-durum">
+                    <div class="bos-durum__daire"></div>
+                    <cfif odevSorusu>
+                        <h3>Önce bu soruyu ödevde cevaplayın</h3>
+                        <p class="sessiz">Çözümler ve yorumlar,soruyu ödev sayfasından cevapladıktan sonra açılacak</p>
+                    <cfelse>
                         <h3>Önce kendi çözümünüzü gönderin</h3>
                         <p class="sessiz">Doğru cevabı,diğer çözümleri ve yorumları görebilmek için cevabınızı ve çözümünüzü göndermeniz gerekiyor</p>
-                    </div>
+                    </cfif>
                 </div>
             </section>
         </cfif>

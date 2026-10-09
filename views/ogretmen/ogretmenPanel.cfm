@@ -65,12 +65,29 @@
 
 <cfquery name="qOgrenciListesi" datasource="#application.DSN#">
     SELECT k.kullaniciID,k.kullaniciAdi,k.adSoyad,k.puan,k.sonGirisTarihi,
-        (SELECT COUNT(*) FROM Cevaplar c WHERE c.kullaniciID=k.kullaniciID) AS cozdugu,
+        (SELECT COUNT(*) FROM Cevaplar c WHERE c.kullaniciID=k.kullaniciID)+(SELECT COUNT(*) FROM OdevCevaplari oc WHERE oc.kullaniciID=k.kullaniciID) AS cozdugu,
         (SELECT COUNT(*) FROM Sorular s WHERE s.kullaniciID=k.kullaniciID AND s.aktifMi=1) AS sordugu
     FROM Kullanicilar k
     WHERE k.rol=<cfqueryparam value="#application.rol.ogrenci#" cfsqltype="cf_sql_tinyint">
     AND k.aktifMi=1
     ORDER BY k.kullaniciAdi
+</cfquery>
+
+<cfquery name="qEksikKonu" datasource="#application.DSN#">
+    SELECT d.dersAdi
+    FROM DersProgrami p
+    INNER JOIN Dersler d ON d.dersID=p.dersID
+    WHERE p.gunNo=<cfqueryparam value="#dayOfWeek(dateAdd('d',1,now()))#" cfsqltype="cf_sql_tinyint">
+    AND d.aktifMi=1
+    AND NOT EXISTS(
+        SELECT 1 FROM GunlukKonuPlani g
+        WHERE g.dersID=p.dersID
+        AND g.planTarihi=CAST(DATEADD(DAY,1,GETDATE()) AS DATE)
+    )
+    <cfif NOT mudurMu AND bransFiltresi>
+        AND p.dersID=<cfqueryparam value="#bransFiltresi#" cfsqltype="cf_sql_integer">
+    </cfif>
+    ORDER BY d.siraNo
 </cfquery>
 
 <cfinclude template="/lgs/views/includes/baslik.cfm">
@@ -87,6 +104,21 @@
             </div>
         </section>
 
+        <cfif qEksikKonu.recordCount>
+            <section class="kart mod-kutu">
+                <div class="kart__baslik">Yarın için konu seçilmedi<span class="rozet rozet--yanlis">#qEksikKonu.recordCount#</span></div>
+                <div class="kart__govde">
+                    <p class="sessiz">Seçim yapmazsanız yapay zeka bu derslerde son kullanılan konudan soru üretir</p>
+                    <div class="satir ust-bosluk">
+                        <cfloop query="qEksikKonu">
+                            <span class="rozet rozet--ders">#encodeForHTML(qEksikKonu.dersAdi)#</span>
+                        </cfloop>
+                    </div>
+                    <a class="dugme dugme--ana ust-bosluk" href="#application.kokYol#/views/ogretmen/konuSecimi.cfm">Konu Seç</a>
+                </div>
+            </section>
+        </cfif>
+
         <cfif qSupheli.recordCount>
             <section class="kart mod-kutu">
                 <div class="kart__baslik">Cevap Anahtarı Şüpheli<span class="rozet rozet--yanlis">#qSupheli.recordCount#</span></div>
@@ -98,8 +130,12 @@
                         <cfloop query="qSupheli">
                             <div class="soru-kutu">
                                 <a class="soru-kutu__ust" href="#application.kokYol#/views/ogretmen/cozumEkle.cfm?soruID=#qSupheli.soruID#">
-                                    <img
-                                        class="soru-kutu__gorsel" src="#application.soruGorselYol##qSupheli.soruGorsel#" alt="Soru">
+                                    <cfif len(qSupheli.soruGorsel)>
+                                        <img
+                                            class="soru-kutu__gorsel" src="<cfif val(qSupheli.kaynak) EQ application.kaynak.ogretmen>#application.odevGorselYol#<cfelse>#application.soruGorselYol#</cfif>#qSupheli.soruGorsel#" alt="Soru">
+                                    <cfelse>
+                                        <div class="soru-kutu__onizleme">#encodeForHTML(left(qSupheli.soruMetni,160))#</div>
+                                    </cfif>
                                 </a>
 
                                 <div class="soru-kutu__govde">

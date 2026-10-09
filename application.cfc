@@ -9,7 +9,6 @@
     <cfset this.sessionCookie.httpOnly=true>
     <cfset this.sessionCookie.secure=true>
     <cfset this.scriptProtect="none">
-    <cfset application.yerelURL="http://localhost:8888">
 
     <cffunction name="envDegeri" access="private" returntype="string" output="false">
         <cfargument name="ad" type="string" required="true">
@@ -61,18 +60,27 @@
     </cffunction>
 
     <cffunction name="onApplicationStart" returntype="boolean" output="false">
+        <cfset var qAIHesap="">
         <cfset application.DSN=this.datasource>
-        <cfset application.varlikSurum="1.0.0">
+        <cfset application.varlikSurum="1.0.1">
         <cfset application.kokYol="/LGSApp">
+        <cfset application.yerelURL="http://localhost:8888">
         <cfset application.geminiSoruKey=envDegeri("GEMINI_API_KEY_Soru")>
         <cfset application.geminiCozumKey=envDegeri("GEMINI_API_KEY_Cozum")>
         <cfset application.uretimToken=envDegeri("LGS_URETIM_TOKEN")>
         <cfset application.geminiURL="https://generativelanguage.googleapis.com/v1beta/interactions">
         <cfset application.aiLimit=5>
-        <cfset application.aiKullaniciID=2>
         <cfset application.uretimBekleme=35000>
 
         <cfset application.rol={mudur=1,ogretmen=2,ogrenci=3,ai=4}>
+        <cfquery name="qAIHesap" datasource="#this.datasource#">
+            SELECT TOP 1 kullaniciID
+            FROM Kullanicilar
+            WHERE rol=<cfqueryparam value="#application.rol.ai#" cfsqltype="cf_sql_tinyint">
+            ORDER BY kullaniciID
+        </cfquery>
+        <cfset application.aiKullaniciID=val(qAIHesap.kullaniciID)>
+
         <cfset application.kaynak={ogretmen=2,ogrenci=3,ai=4}>
         <cfset application.cozumTipi={ogretmen=2,ogrenci=3,ai=4}>
         <cfset application.odevDurum={taslak="taslak",planlandi="planlandi",yayinda="yayinda",kapandi="kapandi"}>

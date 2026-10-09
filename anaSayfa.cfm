@@ -15,17 +15,8 @@
     INNER JOIN Dersler d ON d.dersID=s.dersID
     LEFT JOIN Konular k ON k.konuID=s.konuID
     LEFT JOIN Cevaplar c ON c.soruID=s.soruID
-        AND c.kullaniciID=<cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">
+    AND c.kullaniciID=<cfqueryparam value="#val(SESSION.kullaniciID)#" cfsqltype="cf_sql_integer">
     WHERE s.yayinTarihi>=DATEADD(DAY,-6,CAST(GETDATE() AS DATE))
-    AND (s.yayinTarihi=<cfqueryparam value="#bugun#" cfsqltype="cf_sql_date"> OR c.cevapID IS NULL)
-    AND s.kaynak=<cfqueryparam value="#application.kaynak.ai#" cfsqltype="cf_sql_tinyint">
-    AND s.yayinlandiMi=1
-    AND s.aktifMi=1
-    ORDER BY s.yayinTarihi DESC,d.siraNo
-    AND s.kaynak=<cfqueryparam value="#application.kaynak.ai#" cfsqltype="cf_sql_tinyint">
-    AND s.yayinlandiMi=1
-    AND s.aktifMi=1
-    ORDER BY d.siraNo
 </cfquery>
 
 <cfquery name="qOdevler" datasource="#application.DSN#">
@@ -124,7 +115,7 @@
                 <cfelseif cozulenGunluk EQ qGununSorulari.recordCount AND qGununSorulari.recordCount>
                     Bugünün sorularını tamamladın
                 <cfelseif qGununSorulari.recordCount>
-                    Bugün için #qGununSorulari.recordCount-cozulenGunluk# soru seni bekliyor
+                    #qGununSorulari.recordCount-cozulenGunluk# soru seni bekliyor
                 <cfelse>
                     Bugünün soruları henüz yayınlanmadı
                 </cfif>
@@ -181,7 +172,7 @@
 
         <section class="kart">
             <div class="kart__baslik">
-                Bugünün Soruları:
+                Günlük Sorular:
                 <cfif qGununSorulari.recordCount>
                     <span class="rozet">#cozulenGunluk# / #qGununSorulari.recordCount#</span>
                 </cfif>
@@ -198,6 +189,10 @@
                             <span class="sik__yazi">
                                 <strong>#encodeForHTML(qGununSorulari.dersAdi)#</strong>
                                 <cfif len(qGununSorulari.konuAdi)><br><span class="sessiz">#encodeForHTML(qGununSorulari.konuAdi)#</span></cfif>
+                                
+                                <cfif dateCompare(qGununSorulari.yayinTarihi,bugun,"d") NEQ 0>
+                                    <span class="rozet">#dateFormat(qGununSorulari.yayinTarihi,"dd.mm")#</span>
+                                </cfif>
                             </span>
                         </a>
                     </cfloop>

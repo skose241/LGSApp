@@ -17,7 +17,7 @@
     <cflocation url="#application.kokYol#/views/odev/odevListesi.cfm" addtoken="false">
 </cfif>
 
-<cfif qOdev.durum EQ application.odevDurum.taslak AND NOT ogretmenMi>
+<cfif listFind("#application.odevDurum.taslak#,#application.odevDurum.planlandi#",qOdev.durum) AND NOT ogretmenMi>
     <cflocation url="#application.kokYol#/views/odev/odevListesi.cfm?hata=yetkisiz" addtoken="false">
 </cfif>
 
@@ -98,7 +98,7 @@
     </cfif>
 </cfloop>
 
-<cfif listFind("#application.odevDurum.taslak#,#application.odevDurum.planlandi#",qOdev.durum) AND NOT ogretmenMi>
+<cfif NOT ogretmenMi AND cevaplanan EQ qSorular.recordCount AND qSorular.recordCount>
     <cflocation url="#application.kokYol#/views/odev/odevSonuc.cfm?odevID=#odevID#" addtoken="false">
 </cfif>
 

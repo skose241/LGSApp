@@ -72,7 +72,7 @@
     <div class="dar">
         <section class="kart">
             <div class="kart__govde">
-                <h1 baslik>Giriş Yap</h1>
+                <h1>Giriş Yap</h1>
 
                 <cfif len(hataMesaji)>
                     <div class="bildirim bildirim--hata" role="alert">#hataMesaji#</div>
@@ -86,12 +86,12 @@
                     <cfinclude template="/lgs/views/includes/csrfAlan.cfm">
 
                     <div class="alan">
-                        <label etiket for="kullaniciAdi">Kullanıcı Adı:</label>
+                        <label for="kullaniciAdi">Kullanıcı Adı:</label>
                         <input class="girdi" type="text" id="kullaniciAdi" name="kullaniciAdi" value="#encodeForHTMLAttribute(kullaniciAdiDeger)#" maxlength="50" autocomplete="username" required>
                     </div>
 
                     <div class="alan">
-                        <label etiket for="sifre">Şifre</label>
+                        <label for="sifre">Şifre</label>
                         <input class="girdi" type="password" id="sifre" name="sifre" maxlength="100" autocomplete="current-password" required>
                     </div>
 

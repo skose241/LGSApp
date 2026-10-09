@@ -68,8 +68,6 @@
                         <cfimage action="write" source="#gorsel#" destination="#application.odevGorselDizin##dosyaAdi#" overwrite="true" quality=".8">
                     </cfif>
 
-                    <cfset siraSayac=siraSayac+1>
-
                     <cftransaction>
                         <cfquery datasource="#application.DSN#" result="soruSonuc">
                             INSERT INTO Sorular(kullaniciID,dersID,soruGorsel,dogruCevap,kaynak,yayinlandiMi,aktifMi)
@@ -89,17 +87,26 @@
                             VALUES(
                             <cfqueryparam value="#odevID#" cfsqltype="cf_sql_integer">,
                             <cfqueryparam value="#val(soruSonuc.generatedKey)#" cfsqltype="cf_sql_integer">,
-                            <cfqueryparam value="#siraSayac#" cfsqltype="cf_sql_integer">
+                            <cfqueryparam value="#siraSayac+1#" cfsqltype="cf_sql_integer">
                             )
                         </cfquery>
                     </cftransaction>
 
+                    <cfset siraSayac=siraSayac+1>
                     <cfset eklenen=eklenen+1>
 
                     <cfcatch type="any">
                         <cfif len(dosyaAdi) AND fileExists("#application.odevGorselDizin##dosyaAdi#")>
                             <cffile action="delete" file="#application.odevGorselDizin##dosyaAdi#">
                         </cfif>
+
+                        <cfset createObject("component","lgs.ai").hataYazma(
+                            sayfa=cgi.script_name,
+                            islem="odevTopluYukleme",
+                            mesaj="Ödev #odevID# görsel #i#: #cfcatch.message#",
+                            detay=cfcatch.detail
+                            )>
+
                         <cfset basarisiz=basarisiz+1>
                     </cfcatch>
                 </cftry>

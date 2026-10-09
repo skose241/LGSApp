@@ -1,4 +1,4 @@
-﻿<cfset gerekliRoller="#application.rol.ogrenci#,#application.rol.ogretmen#,#application.rol.mudur#">
+﻿<cfset gerekliRoller="#application.rol.ogrenci#">
 <cfinclude template="/lgs/views/includes/yetki.cfm">
 
 <cfset sayfaBasligi="Soru Ekle">
@@ -58,7 +58,7 @@
                 <cfqueryparam value="#dosyaAdi#" cfsqltype="cf_sql_nvarchar">,
                 <cfqueryparam value="#dogruCevapDeger#" cfsqltype="cf_sql_nchar">,
                 <cfqueryparam value="#aciklamaDeger#" cfsqltype="cf_sql_longvarchar">,
-                application.kaynak.ogrenci,
+                <cfqueryparam value="#application.kaynak.ogrenci#" cfsqltype="cf_sql_tinyint">,
                 1,
                 1
                 )
@@ -77,7 +77,15 @@
                 <cfif len(dosyaAdi) AND fileExists("#yuklemeKlasoru##dosyaAdi#")>
                     <cffile action="delete" file="#yuklemeKlasoru##dosyaAdi#">
                 </cfif>
-                    <cfset hataMesaji="HATA:" & cfcatch.message & " | " & cfcatch.detail>
+
+                <cfset createObject("component","lgs.ai").hataYazma(
+                    sayfa=cgi.script_name,
+                    islem="soruEkle",
+                    mesaj=cfcatch.message,
+                    detay=cfcatch.detail
+                    )>
+
+                <cfset hataMesaji="Soru yüklenemedi.Lütfen tekrar deneyiniz">
             </cfcatch>
         </cftry>
     </cfif>

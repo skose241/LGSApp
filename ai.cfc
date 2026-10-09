@@ -323,7 +323,8 @@
         <cfset gorselMi=len(trim(qSoru.soruGorsel)) GT 0>
         <cfset kurallar="Cevap oluştururken,lütfen şu kuralların dışına çıkma.
             -Markdown,yıldız,kalın yazı,başlık kullanma.
-            -Matematiksel ifadeleri LaTeX ile yaz.
+            -Matematiksel ifadeleri LaTeX ile yaz,satır içi için tek dolar kullan.Örnek: $x^2+3x$
+            -JSON içinde LaTeX komutlarındaki ters bölüyü iki kez yaz.Örnek: $\\frac{1}{2}$
             --Satır içi formüller için tek dolar: $x^2+3x$
             --Ayrı satırda gösterilecek büyük formüller için çift dolar: $$\frac{1}{2}$$
             --Küçüktür/Büyüktür için < ve > yerine \lt ve \gt kullan.
@@ -582,9 +583,12 @@
             </cfif>
 
             <cfset ham=trim(aiCevap.metin)>
-            <cfset ham=reReplace(ham,"^```[a-zA-Z]*","")>
-            <cfset ham=reReplace(ham,"```$","")>
-            <cfset ham=trim(ham)>
+            <cfset ilk=find("{",ham)>
+            <cfset son=len(ham)-find("}",reverse(ham))+1>
+
+            <cfif ilk AND son GT ilk AND son LTE len(ham)>
+                <cfset ham=mid(ham,ilk,son-ilk+1)>
+            </cfif>
 
             <cfif NOT isJSON(ham)>
                 <cfset sonuc.hata="Yanıt JSON biçiminde değil:" & left(ham,200)>
